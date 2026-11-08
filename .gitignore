@@ -1,0 +1,10 @@
+.env
+node_modules/
+data/
+*-credentials.json
+__pycache__/
+
+# Local tools, secrets, and generated previews
+bot.py
+*.png
+
