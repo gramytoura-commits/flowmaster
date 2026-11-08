@@ -1,5 +1,6 @@
 FROM node:24-bookworm-slim
 WORKDIR /app
+RUN apt-get update && apt-get install -y --no-install-recommends curl ca-certificates && rm -rf /var/lib/apt/lists/*
 ENV NODE_ENV=production HOST=0.0.0.0 PORT=3000 PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
 COPY package.json ./
 RUN npm install --omit=dev --ignore-scripts && npm cache clean --force
