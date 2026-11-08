@@ -43,3 +43,20 @@ test('API validates, executes, redacts, persists and cancels registered flows', 
     fs.rmSync(root, { recursive: true, force: true });
   }
 });
+
+test('hosted origin accepts its proxy host and rejects cross-origin writes', async () => {
+  const dataDir = fs.mkdtempSync(path.join(os.tmpdir(), 'flow-hosted-'));
+  const app = createApp({ dataDir, appOrigin: 'https://flow.example.com' });
+  await new Promise(resolve => app.server.listen(0, '127.0.0.1', resolve));
+  const base = `http://127.0.0.1:${app.server.address().port}`;
+  const request = (url, headers, method = 'GET') => new Promise((resolve, reject) => {
+    const req = require('node:http').request(base + url, { headers, method }, res => { res.resume(); resolve(res.statusCode); });
+    req.on('error', reject); req.end();
+  });
+  try {
+    assert.equal(await request('/api/flows', { Host: 'flow.example.com', Origin: 'https://flow.example.com' }), 200);
+    assert.equal(await request('/api/flows', { Host: 'other.example.com' }), 403);
+    assert.equal(await request('/api/runs', { Host: 'flow.example.com', Origin: 'https://evil.example' }, 'POST'), 403);
+    assert.equal(await request('/health', { Host: 'container' }), 200);
+  } finally { app.stop(); fs.rmSync(dataDir, { recursive: true, force: true }); }
+});

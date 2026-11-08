@@ -1,5 +1,11 @@
 # Flow Runner
 
+## Coolify deployment
+
+Deploy the repository's Dockerfile, expose container port 3000, and mount a persistent volume at `/app/data`. Set runtime `BROWSERLESS_TOKEN` and `APP_ORIGIN` (the exact public origin, including `https://`). The container binds to `0.0.0.0`; direct local runs still bind to loopback. `/health` provides a readiness check.
+
+Enable Coolify HTTP Basic Authentication before exposing the app. Authentication is enforced by the proxy; do not publish container port 3000 directly. Keep API keys in Coolify runtime secrets, not build arguments or the repository.
+
 Start with `node server.js`, then open http://127.0.0.1:3000. Set `PORT` to change the port. The server binds to this computer only. It runs registered Node scripts without a shell, with at most three concurrent runs and a ten-minute timeout.
 
 The interface lets you choose a flow, fill its variables, inspect without submitting, review output, and stop a run. History survives restarts; runs active during a restart become `interrupted`.

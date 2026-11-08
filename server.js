@@ -4,7 +4,8 @@ const path = require('node:path');
 const { spawn } = require('node:child_process');
 const { randomUUID } = require('node:crypto');
 
-function createApp({ root = __dirname, dataDir = path.join(root, 'data', 'runs'), timeoutMs = 600000 } = {}) {
+function createApp({ root = __dirname, dataDir = path.join(root, 'data', 'runs'), timeoutMs = 600000, appOrigin = process.env.APP_ORIGIN } = {}) {
+  const hostedOrigin = appOrigin ? new URL(appOrigin).origin : null;
   const readRegistry = () => JSON.parse(fs.readFileSync(path.join(root, 'flows', 'registry.json'), 'utf8'));
   fs.mkdirSync(dataDir, { recursive: true });
   const runs = new Map();
@@ -22,8 +23,11 @@ function createApp({ root = __dirname, dataDir = path.join(root, 'data', 'runs')
   const server = http.createServer(async (req, res) => {
     try {
       const host = req.headers.host || '';
-      if (!/^(127\.0\.0\.1|localhost)(:\d+)?$/.test(host)) return reply(res, 403, { error: 'Local access only' });
-      if (req.headers.origin && ![`http://${host}`].includes(req.headers.origin)) return reply(res, 403, { error: 'Origin not allowed' });
+      if (req.method === 'GET' && req.url === '/health') return reply(res, 200, { status: 'ok' });
+      const localHost = /^(127\.0\.0\.1|localhost)(:\d+)?$/.test(host);
+      if (!localHost && (!hostedOrigin || host !== new URL(hostedOrigin).host)) return reply(res, 403, { error: 'Host not allowed' });
+      const allowedOrigin = localHost ? `http://${host}` : hostedOrigin;
+      if (req.headers.origin && req.headers.origin !== allowedOrigin) return reply(res, 403, { error: 'Origin not allowed' });
       const url = new URL(req.url, `http://${host}`);
       const registry = readRegistry();
       if (req.method === 'GET' && url.pathname === '/api/flows') return reply(res, 200, registry.map(publicFlow));
@@ -91,7 +95,8 @@ function createApp({ root = __dirname, dataDir = path.join(root, 'data', 'runs')
 if (require.main === module) {
   if (fs.existsSync(path.join(__dirname, '.env'))) process.loadEnvFile(path.join(__dirname, '.env'));
   const app = createApp();
-  app.server.listen(Number(process.env.PORT || 3000), '127.0.0.1', () => console.log(`Flow Runner: http://127.0.0.1:${app.server.address().port}`));
+  const host = process.env.HOST || '127.0.0.1';
+  app.server.listen(Number(process.env.PORT || 3000), host, () => console.log(`Flow Runner: ${process.env.APP_ORIGIN || `http://${host}:${app.server.address().port}`}`));
   process.on('SIGINT', app.stop); process.on('SIGTERM', app.stop);
 }
 module.exports = { createApp };
