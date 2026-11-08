@@ -1,0 +1,14 @@
+[
+  {
+    "id": "inbox",
+    "name": "Inbox.eu signup",
+    "website": "https://www.inbox.eu",
+    "description": "Check a username or create an Inbox.eu mailbox.",
+    "script": "inbox.js",
+    "fields": [
+      { "name": "INBOX_USERNAME", "label": "Username", "required": true, "pattern": "^[a-zA-Z0-9._-]{1,64}$", "placeholder": "andreaschat033" },
+      { "name": "INBOX_PASSWORD", "label": "Password", "secret": true, "placeholder": "Leave empty to generate a password" }
+    ],
+    "supportsInspect": true
+  }
+]
