@@ -57,3 +57,7 @@ Set `EMAILBOT_INTEGRATION_KEY` to a random secret of at least 32 characters to e
 `GET /api/emailbot/capabilities` advertises version 1. `GET /api/emailbot/requests/<request-id>` recovers an existing run. `GET /api/runs/<id>/result` returns credentials only for a succeeded, non-inspect Inbox run with a matching, regular `inbox-credentials.json` file whose status is exactly `registered`. These routes require the integration secret; public proxy credentials alone are insufficient. Credentials are never added to ordinary run metadata. The integration key is removed from child-process environments. Repeated owner/request IDs return the same run rather than starting signup again.
 
 EmailBot's separate `FLOWMASTER.md` contains deployment order, required proxy credentials and the inbox.eu IMAP password activation caveat. Node tests use fake scripts and never create real mailboxes. Run `node --test test/*.test.js` to include the integration tests.
+
+## Signup-start recordings
+
+`kraken` requires `KRAKEN_EMAIL`; `outlook` requires `OUTLOOK_USERNAME`. Both recordings stop at the password step and do not create an account. Their successful process exit only confirms that checkpoint. They write `result.json` with `accountCreated: false`, then close the browser. `--inspect` only checks that the initial form is visible and never submits it. Completing signup requires extending the recordings with the remaining steps.

@@ -29,11 +29,13 @@ async function api(url, options) {
 function fields() {
   const flow = activeFlow;
   $('dialog-title').textContent = flow.id === 'inbox' ? 'Inbox.eu' : flow.name;
+  $('flow-description').textContent = flow.description;
+  $('launch').textContent = flow.actionLabel || 'Create';
   $('form-error').textContent = '';
   $('fields').replaceChildren();
   for (const field of flow.fields) {
     const label = document.createElement('label'); label.htmlFor = field.name; label.textContent = field.label + (field.required ? ' *' : '');
-    const input = document.createElement('input'); input.id = field.name; input.name = field.name; input.required = !!field.required; input.type = field.secret ? 'password' : 'text'; input.placeholder = field.placeholder || ''; input.maxLength = 1024; input.autocomplete = 'off';
+    const input = document.createElement('input'); input.id = field.name; input.name = field.name; input.required = !!field.required; input.type = field.secret ? 'password' : field.type === 'email' ? 'email' : 'text'; input.placeholder = field.placeholder || ''; input.maxLength = 1024; input.autocomplete = 'off';
     if (field.pattern) input.pattern = field.pattern;
     $('fields').append(label, input);
   }
@@ -55,7 +57,7 @@ async function refresh() {
   if (!runs.length) { const empty = document.createElement('p'); empty.className = 'empty'; empty.textContent = 'No runs yet.'; $('runs').append(empty); }
   for (const run of runs) {
     const button = document.createElement('button'); button.type = 'button'; button.className = `run${selected === run.id ? ' selected' : ''}`;
-    const info = document.createElement('span'); const name = document.createElement('strong'); name.textContent = run.variables.INBOX_USERNAME || run.flowName;
+    const info = document.createElement('span'); const name = document.createElement('strong'); name.textContent = Object.values(run.variables).find(Boolean) || run.flowName;
     const date = document.createElement('small'); date.textContent = `${run.flowName} Ă‚· ${new Date(run.startedAt).toLocaleString()}${run.inspect ? ' Ă‚· Inspect' : ''}`;
     info.append(name, date); const status = document.createElement('span'); status.className = `status ${run.status}`; status.textContent = run.status.replaceAll('_', ' ');
     button.append(info, status); button.onclick = () => { selected = run.id; detail(); refresh().catch(showError); }; $('runs').append(button);
@@ -95,7 +97,7 @@ $('cancel').onclick = async () => { try { await api(`/api/runs/${selected}/cance
     const description = document.createElement('span'); description.className = 'flow-description';
     description.textContent = flow.id === 'inbox' ? 'Create a new mailbox' : flow.description;
     const content = document.createElement('span'); content.className = 'flow-content'; content.append(label, description);
-    const action = document.createElement('span'); action.className = 'flow-action'; action.textContent = 'New account';
+    const action = document.createElement('span'); action.className = 'flow-action'; action.textContent = flow.actionLabel || 'New account';
     const arrow = document.createElement('span'); arrow.className = 'flow-arrow'; arrow.textContent = '›'; arrow.setAttribute('aria-hidden', 'true');
     button.append(content, action, arrow);
     button.onclick = () => { activeFlow = flow; fields(); $('parameters').showModal(); };

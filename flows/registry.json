@@ -10,5 +10,29 @@
       { "name": "INBOX_PASSWORD", "label": "Password", "secret": true, "placeholder": "Leave empty to generate a password" }
     ],
     "supportsInspect": true
+  },
+  {
+    "id": "kraken",
+    "name": "Kraken",
+    "website": "https://www.kraken.com",
+    "description": "Start signup. Stops at the password step; no account is created.",
+    "script": "kraken.js",
+    "actionLabel": "Start signup",
+    "fields": [
+      { "name": "KRAKEN_EMAIL", "label": "Email", "required": true, "type": "email", "pattern": "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$", "placeholder": "you@example.com" }
+    ],
+    "supportsInspect": true
+  },
+  {
+    "id": "outlook",
+    "name": "Outlook.com",
+    "website": "https://outlook.com",
+    "description": "Start signup. Stops at the password step; no account is created.",
+    "script": "outlook.js",
+    "actionLabel": "Start signup",
+    "fields": [
+      { "name": "OUTLOOK_USERNAME", "label": "Username", "required": true, "pattern": "^[a-zA-Z0-9][a-zA-Z0-9._-]{0,63}$", "placeholder": "yourname" }
+    ],
+    "supportsInspect": true
   }
 ]
