@@ -49,3 +49,11 @@ Statuses: `running`, `succeeded`, `failed`, `cancelled`, `timed_out`, `interrupt
 5. Restart the server. The new flow appears automatically in the interface.
 
 Run checks with `node --test test/server.test.js`. These use a local fixture and do not register real accounts.
+
+
+## EmailBot integration
+Set `EMAILBOT_INTEGRATION_KEY` to a random secret of at least 32 characters to enable backend-only integration endpoints. Keep Coolify proxy Basic Auth on public HTTPS. EmailBot additionally sends `X-Emailbot-Key`, numeric `X-Emailbot-Owner` and a stable `X-Emailbot-Request` when starting an Inbox run. Service run listing, status, cancellation, recovery and credential results are scoped to that owner.
+
+`GET /api/emailbot/capabilities` advertises version 1. `GET /api/emailbot/requests/<request-id>` recovers an existing run. `GET /api/runs/<id>/result` returns credentials only for a succeeded, non-inspect Inbox run with a matching, regular `inbox-credentials.json` file whose status is exactly `registered`. These routes require the integration secret; public proxy credentials alone are insufficient. Credentials are never added to ordinary run metadata. The integration key is removed from child-process environments. Repeated owner/request IDs return the same run rather than starting signup again.
+
+EmailBot's separate `FLOWMASTER.md` contains deployment order, required proxy credentials and the inbox.eu IMAP password activation caveat. Node tests use fake scripts and never create real mailboxes. Run `node --test test/*.test.js` to include the integration tests.
